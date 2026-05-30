@@ -16,7 +16,7 @@ namespace Project.Contorller
 
         public Gallery_DB()
         {
-            string conn = @"Data Source=ASUS\SQLEXPRESS;Initial Catalog=Project;Integrated Security=True;";
+            string conn = @"Data Source=ASD\SQLEXPRESS;Initial Catalog=Project;Integrated Security=True;TrustServerCertificate=True;";
             connection = new SqlConnection(conn);
         }
 

@@ -16,7 +16,7 @@ namespace Project.Contorller
         private SqlConnection connection;// connection string
         public Login_DB()
         {
-            string conn = @"Data Source=ASUS\SQLEXPRESS;Initial Catalog=Project;Integrated Security=True;";
+            string conn = @"Data Source=ASD\SQLEXPRESS;Initial Catalog=Project;Integrated Security=True;TrustServerCertificate=True;";
             connection = new SqlConnection(conn);
         }
 
@@ -137,6 +137,12 @@ namespace Project.Contorller
                 cmd.Parameters.AddWithValue("@username", username);
                 int count = (int)cmd.ExecuteScalar();
                 return count > 0;
+            }
+            catch (Exception ex)
+            {
+                // ஒருவேளை எரர் வந்தால் சாஃப்ட்வேர் க்ராஷ் ஆகாமல் இருக்க கேட்ச் பிளாக் அவசியம்
+                MessageBox.Show("Error checking username: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
             finally
             {

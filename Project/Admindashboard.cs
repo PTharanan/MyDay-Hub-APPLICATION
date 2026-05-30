@@ -39,37 +39,54 @@ namespace Project
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-            if (dataView.Rows.Count > 0)
+            // கிரிட்வியூவில் தரவு மற்றும் ரோ தேர்ந்தெடுக்கப்பட்டுள்ளதா என உறுதி செய்தல்
+            if (dataView.Rows.Count > 0 && dataView.CurrentRow != null)
             {
                 string username = dataView.CurrentRow.Cells["Username"].Value.ToString();
-                if (username == "admin" && dataView.CurrentRow.Cells["Password"].Value.ToString() == "admin")
-                {
-                    DialogResult result = MessageBox.Show("Do you really want to delete this?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-                    if (result == DialogResult.Yes)
-                    {
-                        db.Deletedata(username);
-                        dataView.Rows.RemoveAt(dataView.SelectedRows[0].Index);
-                        MessageBox.Show("Sucessfully Deleted");
-                    }
-                }
-                else
+                // பாதுகாப்பு விதி: முதன்மை 'admin' கணக்கை யாரையும் டெலீட் செய்ய அனுமதிக்கக் கூடாது
+                if (username.ToLower() == "admin")
                 {
-                 
-                    db.Deletedata(username);
-                    dataView.Rows.RemoveAt(dataView.SelectedRows[0].Index);
-                    MessageBox.Show("Sucessfully Deleted");
+                    MessageBox.Show("Security Restriction: The primary 'admin' account cannot be deleted!", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    return;
+                }
+
+                // டெலீட் செய்ய அனுமதி கேட்டல்
+                DialogResult result = MessageBox.Show($"Do you really want to delete user '{username}' and all their gallery images?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        // 1. டேட்டாபேஸில் இருந்து பயனரின் தரவை நீக்குதல் 
+                        // (குறிப்பு: உங்கள் 'db.Deletedata' மெத்தடுக்குள் முதலில் Image டேபிளையும், பின் Users டேபிளையும் அழிக்க வேண்டும்)
+                        db.Deletedata(username);
+
+                        MessageBox.Show("Successfully Deleted Everything!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // 2. கிரிட்வியூவை புதுப்பிக்க (Refresh) தரவை மீண்டும் லோடு செய்தல்
+                        DataTable data = db.Pulldata();
+                        dataView.DataSource = data;
+
+                        // டேட்டா இல்லை என்றால் பட்டன்களை மறைத்தல்
+                        if (dataView.Rows.Count == 0)
+                        {
+                            deleteBtn.Visible = false;
+                            editBtn.Visible = false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Foreign Key அல்லது வேறு ஏதேனும் எரர் வந்தால் சாஃப்ட்வேர் க்ராஷ் ஆகாமல் தடுத்து மெசேஜ் காட்டும்
+                        MessageBox.Show("Database Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             else
             {
-                DialogResult result = MessageBox.Show("Table Haven't Data");
-
-                if (result == DialogResult.OK)
-                {
-                    deleteBtn.Visible = false;
-                    editBtn.Visible = false;
-                }
+                MessageBox.Show("Table doesn't have any data.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                deleteBtn.Visible = false;
+                editBtn.Visible = false;
             }
         }
 

@@ -39,14 +39,37 @@ namespace Project
 
         private void Gallery_Load(object sender, EventArgs e)
         {
-            DataTable data = db.Pulldata(logusername);
-            dataOut.DataSource = data;
-            dataOut.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;// fit table on datagridview
-            ((DataGridViewImageColumn)dataOut.Columns["Image"]).ImageLayout = DataGridViewImageCellLayout.Stretch;// fit image on coloum
-            if (dataOut.Rows.Count != 0)
+            try
             {
-                deleteBtn.Visible = true;
-                editBtn.Visible = true;
+                DataTable data = db.Pulldata(logusername);
+                dataOut.DataSource = data;
+
+                // டேபிளை கிரிட் வியூவிற்குள் சரியாகப் பொருத்த (Fit)
+                dataOut.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+                // "Image" என்ற காலம் இருக்கிறதா மற்றும் அது இமேஜ் காலம் தானா என்று சரிபார்க்கிறோம்
+                if (dataOut.Columns.Contains("Image") && dataOut.Columns["Image"] is DataGridViewImageColumn)
+                {
+                    ((DataGridViewImageColumn)dataOut.Columns["Image"]).ImageLayout = DataGridViewImageCellLayout.Stretch;
+                }
+
+                // டேபிளில் ரோக்கள் (Rows) இருக்கிறதா என்று சரிபார்த்து பட்டன்களைக் காட்டுதல்
+                if (dataOut.Rows.Count > 0)
+                {
+                    deleteBtn.Visible = true;
+                    editBtn.Visible = true;
+                }
+                else
+                {
+                    // ஒருவேளை தரவு இல்லை என்றால் பட்டன்களை மறைத்து வைப்பது நல்லது
+                    deleteBtn.Visible = false;
+                    editBtn.Visible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // கோடில் ஏதேனும் எதிர்பாராத எரர் வந்தால் சாஃப்ட்வேர் க்ராஷ் ஆகாமல் தடுத்து எரரைக் காட்டும்
+                MessageBox.Show("Error loading gallery: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
